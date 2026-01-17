@@ -17,6 +17,14 @@ type Token = {
   price: string;
 };
 
+type Product = {
+  id: string;
+  name: string;
+  description: string;
+  price: string;
+  icon: string;
+};
+
 const privileges: Privilege[] = [
   {
     id: 'baron',
@@ -109,12 +117,76 @@ const tokens: Token[] = [
   { id: 'token9', amount: '5 000 000', price: '6 999 ₽' }
 ];
 
+const products: Product[] = [
+  { id: 'donate-case', name: 'Донат кейс', description: 'Эксклюзивный кейс с редкими предметами', price: '129 ₽', icon: 'Gift' },
+  { id: 'sphere-case', name: 'Кейс со сферами', description: 'Содержит магические сферы', price: '39 ₽', icon: 'Circle' },
+  { id: 'talisman-case', name: 'Кейс с талисманами', description: 'Мощные талисманы для улучшения', price: '69 ₽', icon: 'Sparkles' },
+  { id: 'token-case', name: 'Кейс с токенами', description: 'Случайное количество токенов', price: '13 ₽', icon: 'Coins' },
+  { id: 'coin-key', name: 'Монетный ключ', description: 'Ключ для открытия монетных кейсов', price: '5 ₽', icon: 'Key' },
+  { id: 'regular-case', name: 'Обычный кейс', description: 'Базовый кейс с полезными предметами', price: '5 ₽', icon: 'Package' },
+  { id: 'tool-case', name: 'Инструментальный кейс', description: 'Кейс с редкими инструментами', price: '13 ₽', icon: 'Wrench' },
+  { id: 'weapon-case', name: 'Оружейный кейс', description: 'Мощное оружие и улучшения', price: '13 ₽', icon: 'Sword' },
+  { id: 'armor-case', name: 'Броневой кейс', description: 'Защитное снаряжение высокого уровня', price: '13 ₽', icon: 'Shield' },
+  { id: 'unmute', name: 'Размут', description: 'Снятие мута с аккаунта', price: '59 ₽', icon: 'Volume2' },
+  { id: 'unban', name: 'Разбан', description: 'Снятие бана с аккаунта', price: '99 ₽', icon: 'Unlock' },
+  { id: 'account-restore', name: 'Восстановление аккаунта', description: 'Полное восстановление утраченного аккаунта', price: '1 ₽', icon: 'UserCheck' },
+  { id: 'rights-restore', name: 'Восстановление прав', description: 'Восстановление утраченных прав и привилегий', price: '289 ₽', icon: 'Award' }
+];
+
 const Index = () => {
   const [selectedPrivilege, setSelectedPrivilege] = useState<Privilege>(privileges[0]);
   const [selectedToken, setSelectedToken] = useState<Token>(tokens[0]);
-  const [currentPage, setCurrentPage] = useState<'home' | 'tokens' | 'sales' | 'rules' | 'forum'>('home');
+  const [selectedProduct, setSelectedProduct] = useState<Product>(products[0]);
+  const [currentPage, setCurrentPage] = useState<'home' | 'tokens' | 'products' | 'sales' | 'rules' | 'forum'>('home');
 
   const renderContent = () => {
+    if (currentPage === 'products') {
+      return (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {products.map((product) => (
+              <Card
+                key={product.id}
+                onClick={() => setSelectedProduct(product)}
+                className={`p-4 cursor-pointer transition-all hover:scale-105 ${
+                  selectedProduct.id === product.id
+                    ? 'ring-2 ring-primary'
+                    : ''
+                }`}
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <Icon name={product.icon} size={24} className="text-primary" />
+                  <h3 className="text-lg font-bold">{product.name}</h3>
+                </div>
+                <p className="text-sm text-muted-foreground mb-2">{product.description}</p>
+                <p className="text-lg text-primary font-semibold">{product.price}</p>
+              </Card>
+            ))}
+          </div>
+
+          <Card className="p-6">
+            <div className="space-y-6">
+              <div className="flex items-center gap-4">
+                <Icon name={selectedProduct.icon} size={48} className="text-primary" />
+                <div>
+                  <h2 className="text-3xl font-bold mb-1">{selectedProduct.name}</h2>
+                  <p className="text-2xl text-primary font-semibold">{selectedProduct.price}</p>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-lg">{selectedProduct.description}</p>
+              </div>
+
+              <Button size="lg" className="w-full mt-6">
+                Купить {selectedProduct.name}
+              </Button>
+            </div>
+          </Card>
+        </div>
+      );
+    }
+
     if (currentPage === 'tokens') {
       return (
         <div className="space-y-6">
@@ -263,6 +335,12 @@ const Index = () => {
             onClick={() => setCurrentPage('tokens')}
           >
             Токены
+          </Button>
+          <Button
+            variant={currentPage === 'products' ? 'default' : 'ghost'}
+            onClick={() => setCurrentPage('products')}
+          >
+            Товары
           </Button>
           <Button
             variant={currentPage === 'sales' ? 'default' : 'ghost'}
