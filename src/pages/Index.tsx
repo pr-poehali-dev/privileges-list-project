@@ -141,15 +141,124 @@ const Index = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product>(products[0]);
   const [currentPage, setCurrentPage] = useState<'home' | 'tokens' | 'products' | 'sales' | 'rules' | 'forum'>('home');
   const [quantity, setQuantity] = useState(1);
+  const [privilegeQuantity, setPrivilegeQuantity] = useState(1);
+  const [tokenQuantity, setTokenQuantity] = useState(1);
   const [nickname, setNickname] = useState('');
   const [email, setEmail] = useState('');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [agreedToOwnership, setAgreedToOwnership] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'sbp' | 'mir' | null>(null);
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardExpiry, setCardExpiry] = useState('');
+  const [cardCVV, setCardCVV] = useState('');
+  const [currentPaymentAmount, setCurrentPaymentAmount] = useState(0);
+
+  const handlePayment = () => {
+    alert(`Платеж на сумму ${currentPaymentAmount} ₽ обрабатывается. Товар будет выдан автоматически на сервере.`);
+    setShowPayment(false);
+    setPaymentMethod(null);
+    setCardNumber('');
+    setCardExpiry('');
+    setCardCVV('');
+  };
+
+  const renderPaymentModal = () => {
+    if (!showPayment) return null;
+
+    if (paymentMethod === 'mir') {
+      return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowPayment(false)}>
+          <Card className="p-6 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-2xl font-bold mb-4">Оплата картой</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Номер карты</label>
+                <Input
+                  type="text"
+                  placeholder="1234 5678 9012 3456"
+                  value={cardNumber}
+                  onChange={(e) => setCardNumber(e.target.value)}
+                  maxLength={19}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Дата окончания</label>
+                  <Input
+                    type="text"
+                    placeholder="MM/YY"
+                    value={cardExpiry}
+                    onChange={(e) => setCardExpiry(e.target.value)}
+                    maxLength={5}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">CVV</label>
+                  <Input
+                    type="text"
+                    placeholder="123"
+                    value={cardCVV}
+                    onChange={(e) => setCardCVV(e.target.value)}
+                    maxLength={3}
+                  />
+                </div>
+              </div>
+              <div className="pt-4">
+                <p className="text-lg font-semibold mb-4">К оплате: {currentPaymentAmount} ₽</p>
+                <Button
+                  size="lg"
+                  className="w-full bg-destructive hover:bg-destructive/90 rounded-xl"
+                  onClick={handlePayment}
+                >
+                  ОПЛАТИТЬ {currentPaymentAmount} ₽
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      );
+    }
+
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowPayment(false)}>
+        <Card className="p-6 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
+          <h2 className="text-2xl font-bold mb-4">Оплата</h2>
+          <p className="text-muted-foreground mb-6">Выберите предпочитаемый способ оплаты</p>
+          <div className="space-y-4">
+            <Button
+              size="lg"
+              variant="outline"
+              className="w-full h-20 text-lg font-semibold rounded-xl"
+              onClick={() => setPaymentMethod('sbp')}
+            >
+              <div className="text-center w-full">
+                <div>СБП</div>
+                <div className="text-xs text-muted-foreground font-normal mt-1">Минимум 10 Руб</div>
+              </div>
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="w-full h-20 text-lg font-semibold rounded-xl"
+              onClick={() => setPaymentMethod('mir')}
+            >
+              <div className="text-center w-full">
+                <div>МИР</div>
+                <div className="text-xs text-muted-foreground font-normal mt-1">Россия, СНГ</div>
+              </div>
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  };
 
   const renderContent = () => {
     if (currentPage === 'products') {
       return (
         <div className="space-y-6">
+          {showPayment && renderPaymentModal()}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {products.map((product) => (
               <Card
@@ -270,6 +379,10 @@ const Index = () => {
                         size="lg"
                         className="w-full bg-destructive hover:bg-destructive/90 rounded-xl"
                         disabled={!agreedToTerms || !agreedToOwnership}
+                        onClick={() => {
+                          setCurrentPaymentAmount(parseInt(selectedProduct.price) * quantity);
+                          setShowPayment(true);
+                        }}
                       >
                         ОПЛАТИТЬ
                       </Button>
@@ -290,6 +403,7 @@ const Index = () => {
     if (currentPage === 'tokens') {
       return (
         <div className="space-y-6">
+          {showPayment && renderPaymentModal()}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {tokens.map((token) => (
               <Card
@@ -340,9 +454,84 @@ const Index = () => {
                 </ul>
               </div>
 
-              <Button size="lg" className="w-full mt-6">
-                Купить {selectedToken.amount} токенов
-              </Button>
+              <div className="grid md:grid-cols-[1fr,400px] gap-6">
+                <div>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium mb-2">Количество:</label>
+                    <Input
+                      type="number"
+                      min="1"
+                      value={tokenQuantity}
+                      onChange={(e) => setTokenQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                      className="w-32"
+                    />
+                  </div>
+                </div>
+                
+                <Card className="p-4 bg-muted">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Ваш никнейм:</label>
+                      <Input
+                        type="text"
+                        placeholder="Введите никнейм"
+                        value={nickname}
+                        onChange={(e) => setNickname(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Ваш Email:</label>
+                      <Input
+                        type="email"
+                        placeholder="example@mail.ru"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Checkbox
+                        id="terms-token"
+                        checked={agreedToTerms}
+                        onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
+                      />
+                      <label htmlFor="terms-token" className="text-sm cursor-pointer">
+                        Я принимаю условия <span className="text-destructive">пользовательского соглашения и оказания услуг</span>
+                      </label>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Checkbox
+                        id="ownership-token"
+                        checked={agreedToOwnership}
+                        onCheckedChange={(checked) => setAgreedToOwnership(checked as boolean)}
+                      />
+                      <label htmlFor="ownership-token" className="text-sm cursor-pointer">
+                        Я подтверждаю, что банковская карта принадлежит мне
+                      </label>
+                    </div>
+                    {(!agreedToTerms || !agreedToOwnership) && (
+                      <p className="text-destructive text-sm">Поставьте две галочки чтобы купить</p>
+                    )}
+                    <div className="pt-4 border-t">
+                      <h3 className="font-semibold mb-2">Оформление платежа</h3>
+                      <p className="text-sm mb-4">Стоимость товара(ов): <span className="font-semibold text-lg">{parseInt(selectedToken.price) * tokenQuantity} ₽</span></p>
+                      <Button
+                        size="lg"
+                        className="w-full bg-destructive hover:bg-destructive/90 rounded-xl"
+                        disabled={!agreedToTerms || !agreedToOwnership}
+                        onClick={() => {
+                          setCurrentPaymentAmount(parseInt(selectedToken.price) * tokenQuantity);
+                          setShowPayment(true);
+                        }}
+                      >
+                        ОПЛАТИТЬ
+                      </Button>
+                      <p className="text-xs text-muted-foreground mt-3 text-center">
+                        Храним и обрабатываем персональные данные в соответствии с <span className="text-destructive">Политикой конфиденциальности</span>
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              </div>
             </div>
           </Card>
         </div>
@@ -366,6 +555,7 @@ const Index = () => {
 
     return (
       <div className="space-y-6">
+        {showPayment && renderPaymentModal()}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {privileges.map((privilege) => (
             <Card
@@ -411,9 +601,84 @@ const Index = () => {
               </ul>
             </div>
 
-            <Button size="lg" className="w-full mt-6">
-              Приобрести {selectedPrivilege.name}
-            </Button>
+            <div className="grid md:grid-cols-[1fr,400px] gap-6">
+                <div>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium mb-2">Количество:</label>
+                    <Input
+                      type="number"
+                      min="1"
+                      value={privilegeQuantity}
+                      onChange={(e) => setPrivilegeQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                      className="w-32"
+                    />
+                  </div>
+                </div>
+                
+                <Card className="p-4 bg-muted">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Ваш никнейм:</label>
+                      <Input
+                        type="text"
+                        placeholder="Введите никнейм"
+                        value={nickname}
+                        onChange={(e) => setNickname(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Ваш Email:</label>
+                      <Input
+                        type="email"
+                        placeholder="example@mail.ru"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Checkbox
+                        id="terms-priv"
+                        checked={agreedToTerms}
+                        onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
+                      />
+                      <label htmlFor="terms-priv" className="text-sm cursor-pointer">
+                        Я принимаю условия <span className="text-destructive">пользовательского соглашения и оказания услуг</span>
+                      </label>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Checkbox
+                        id="ownership-priv"
+                        checked={agreedToOwnership}
+                        onCheckedChange={(checked) => setAgreedToOwnership(checked as boolean)}
+                      />
+                      <label htmlFor="ownership-priv" className="text-sm cursor-pointer">
+                        Я подтверждаю, что банковская карта принадлежит мне
+                      </label>
+                    </div>
+                    {(!agreedToTerms || !agreedToOwnership) && (
+                      <p className="text-destructive text-sm">Поставьте две галочки чтобы купить</p>
+                    )}
+                    <div className="pt-4 border-t">
+                      <h3 className="font-semibold mb-2">Оформление платежа</h3>
+                      <p className="text-sm mb-4">Стоимость товара(ов): <span className="font-semibold text-lg">{parseInt(selectedPrivilege.price!) * privilegeQuantity} ₽</span></p>
+                      <Button
+                        size="lg"
+                        className="w-full bg-destructive hover:bg-destructive/90 rounded-xl"
+                        disabled={!agreedToTerms || !agreedToOwnership}
+                        onClick={() => {
+                          setCurrentPaymentAmount(parseInt(selectedPrivilege.price!) * privilegeQuantity);
+                          setShowPayment(true);
+                        }}
+                      >
+                        ОПЛАТИТЬ
+                      </Button>
+                      <p className="text-xs text-muted-foreground mt-3 text-center">
+                        Храним и обрабатываем персональные данные в соответствии с <span className="text-destructive">Политикой конфиденциальности</span>
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              </div>
           </div>
         </Card>
       </div>
