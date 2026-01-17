@@ -112,24 +112,28 @@ const Index = () => {
     }
 
     return (
-      <div className="grid grid-cols-1 lg:grid-cols-[300px,1fr] gap-6 h-full">
-        <div className="space-y-2">
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {privileges.map((privilege) => (
-            <button
+            <Card
               key={privilege.id}
               onClick={() => setSelectedPrivilege(privilege)}
-              className={`w-full text-left px-4 py-3 rounded-lg transition-all ${
+              className={`p-4 cursor-pointer transition-all hover:scale-105 ${
                 selectedPrivilege.id === privilege.id
-                  ? 'bg-primary text-primary-foreground font-medium'
-                  : 'bg-card hover:bg-secondary text-foreground'
+                  ? 'ring-2 ring-primary'
+                  : ''
               }`}
             >
-              {privilege.name}
-            </button>
+              <h3 className="text-xl font-bold mb-2">{privilege.name}</h3>
+              {privilege.price && (
+                <p className="text-lg text-primary font-semibold mb-2">{privilege.price}</p>
+              )}
+              <p className="text-sm text-muted-foreground line-clamp-2">{privilege.description}</p>
+            </Card>
           ))}
         </div>
 
-        <Card className="p-6 overflow-auto">
+        <Card className="p-6">
           <div className="space-y-6">
             <div>
               <h2 className="text-3xl font-bold mb-2">{selectedPrivilege.name}</h2>
