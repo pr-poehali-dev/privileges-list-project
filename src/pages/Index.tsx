@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import Icon from '@/components/ui/icon';
 
 type Privilege = {
@@ -138,6 +140,11 @@ const Index = () => {
   const [selectedToken, setSelectedToken] = useState<Token>(tokens[0]);
   const [selectedProduct, setSelectedProduct] = useState<Product>(products[0]);
   const [currentPage, setCurrentPage] = useState<'home' | 'tokens' | 'products' | 'sales' | 'rules' | 'forum'>('home');
+  const [quantity, setQuantity] = useState(1);
+  const [nickname, setNickname] = useState('');
+  const [email, setEmail] = useState('');
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [agreedToOwnership, setAgreedToOwnership] = useState(false);
 
   const renderContent = () => {
     if (currentPage === 'products') {
@@ -165,22 +172,115 @@ const Index = () => {
           </div>
 
           <Card className="p-6">
-            <div className="space-y-6">
-              <div className="flex items-center gap-4">
-                <Icon name={selectedProduct.icon} size={48} className="text-primary" />
+            <div className="grid md:grid-cols-[1fr,400px] gap-8">
+              <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <Icon name={selectedProduct.icon} size={48} className="text-primary" />
+                  <div>
+                    <h2 className="text-3xl font-bold mb-1">{selectedProduct.name}</h2>
+                    <p className="text-2xl text-primary font-semibold">{selectedProduct.price}</p>
+                  </div>
+                </div>
+
                 <div>
-                  <h2 className="text-3xl font-bold mb-1">{selectedProduct.name}</h2>
-                  <p className="text-2xl text-primary font-semibold">{selectedProduct.price}</p>
+                  <label className="block text-sm font-medium mb-2">Количество товара:</label>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={quantity}
+                    onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                    className="w-32"
+                  />
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="text-xl font-semibold">Инструкция по покупке</h3>
+                  
+                  <div>
+                    <h4 className="font-semibold mb-1">1. Выбор товара</h4>
+                    <p className="text-muted-foreground">Добавьте необходимый товар(ы) В КОРЗИНУ и заполните форму.</p>
+                  </div>
+
+                  <div>
+                    <h4 className="font-semibold mb-1">2. Оплата товара</h4>
+                    <p className="text-muted-foreground">Оплатите товар(ы), которые вы добавили в корзину</p>
+                  </div>
+
+                  <div>
+                    <h4 className="font-semibold mb-1">3. Активация</h4>
+                    <p className="text-muted-foreground">После оплаты товары выдаються на выбраном вами сервере автоматически. Если товар не выдался, обратитесь к владельцу сервере: Скоро будет</p>
+                  </div>
                 </div>
               </div>
 
-              <div>
-                <p className="text-lg">{selectedProduct.description}</p>
-              </div>
+              <div className="space-y-4">
+                <Card className="p-4 bg-muted">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Ваш никнейм:</label>
+                      <Input
+                        type="text"
+                        placeholder="Введите никнейм"
+                        value={nickname}
+                        onChange={(e) => setNickname(e.target.value)}
+                      />
+                    </div>
 
-              <Button size="lg" className="w-full mt-6">
-                Купить {selectedProduct.name}
-              </Button>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Ваш Email:</label>
+                      <Input
+                        type="email"
+                        placeholder="example@mail.ru"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="flex items-start gap-2">
+                      <Checkbox
+                        id="terms"
+                        checked={agreedToTerms}
+                        onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
+                      />
+                      <label htmlFor="terms" className="text-sm cursor-pointer">
+                        Я принимаю условия <span className="text-destructive">пользовательского соглашения и оказания услуг</span>
+                      </label>
+                    </div>
+
+                    <div className="flex items-start gap-2">
+                      <Checkbox
+                        id="ownership"
+                        checked={agreedToOwnership}
+                        onCheckedChange={(checked) => setAgreedToOwnership(checked as boolean)}
+                      />
+                      <label htmlFor="ownership" className="text-sm cursor-pointer">
+                        Я подтверждаю, что банковская карта принадлежит мне
+                      </label>
+                    </div>
+
+                    {(!agreedToTerms || !agreedToOwnership) && (
+                      <p className="text-destructive text-sm">Поставьте две галочки чтобы купить</p>
+                    )}
+
+                    <div className="pt-4 border-t">
+                      <h3 className="font-semibold mb-2">Оформление платежа</h3>
+                      <p className="text-sm mb-4">Стоимость товара(ов): <span className="font-semibold text-lg">{parseInt(selectedProduct.price) * quantity} ₽</span></p>
+                      
+                      <Button
+                        size="lg"
+                        className="w-full bg-destructive hover:bg-destructive/90 rounded-xl"
+                        disabled={!agreedToTerms || !agreedToOwnership}
+                      >
+                        ОПЛАТИТЬ
+                      </Button>
+
+                      <p className="text-xs text-muted-foreground mt-3 text-center">
+                        Храним и обрабатываем персональные данные в соответствии с <span className="text-destructive">Политикой конфиденциальности</span>
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              </div>
             </div>
           </Card>
         </div>
