@@ -11,6 +11,12 @@ type Privilege = {
   price?: string;
 };
 
+type Token = {
+  id: string;
+  amount: string;
+  price: string;
+};
+
 const privileges: Privilege[] = [
   {
     id: 'baron',
@@ -91,11 +97,86 @@ const privileges: Privilege[] = [
   }
 ];
 
+const tokens: Token[] = [
+  { id: 'token1', amount: '10 000', price: '49 ₽' },
+  { id: 'token2', amount: '30 000', price: '149 ₽' },
+  { id: 'token3', amount: '60 000', price: '299 ₽' },
+  { id: 'token4', amount: '100 000', price: '399 ₽' },
+  { id: 'token5', amount: '200 000', price: '499 ₽' },
+  { id: 'token6', amount: '300 000', price: '799 ₽' },
+  { id: 'token7', amount: '500 000', price: '999 ₽' },
+  { id: 'token8', amount: '1 000 000', price: '1 999 ₽' },
+  { id: 'token9', amount: '5 000 000', price: '6 999 ₽' }
+];
+
 const Index = () => {
   const [selectedPrivilege, setSelectedPrivilege] = useState<Privilege>(privileges[0]);
-  const [currentPage, setCurrentPage] = useState<'home' | 'sales' | 'rules' | 'forum'>('home');
+  const [selectedToken, setSelectedToken] = useState<Token>(tokens[0]);
+  const [currentPage, setCurrentPage] = useState<'home' | 'tokens' | 'sales' | 'rules' | 'forum'>('home');
 
   const renderContent = () => {
+    if (currentPage === 'tokens') {
+      return (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {tokens.map((token) => (
+              <Card
+                key={token.id}
+                onClick={() => setSelectedToken(token)}
+                className={`p-4 cursor-pointer transition-all hover:scale-105 ${
+                  selectedToken.id === token.id
+                    ? 'ring-2 ring-primary'
+                    : ''
+                }`}
+              >
+                <h3 className="text-xl font-bold mb-2">{token.amount} токенов</h3>
+                <p className="text-lg text-primary font-semibold">{token.price}</p>
+              </Card>
+            ))}
+          </div>
+
+          <Card className="p-6">
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-3xl font-bold mb-2">{selectedToken.amount} токенов</h2>
+                <p className="text-2xl text-primary font-semibold">{selectedToken.price}</p>
+              </div>
+
+              <div>
+                <p className="text-muted-foreground text-lg">Внутриигровая валюта для покупок на сервере</p>
+              </div>
+
+              <div>
+                <h3 className="text-xl font-semibold mb-3">Что можно купить за токены:</h3>
+                <ul className="space-y-2">
+                  <li className="flex items-start gap-2">
+                    <Icon name="Check" size={20} className="text-primary mt-0.5 flex-shrink-0" />
+                    <span>Уникальные предметы и ресурсы</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Icon name="Check" size={20} className="text-primary mt-0.5 flex-shrink-0" />
+                    <span>Косметические улучшения</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Icon name="Check" size={20} className="text-primary mt-0.5 flex-shrink-0" />
+                    <span>Доступ к эксклюзивным зонам</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Icon name="Check" size={20} className="text-primary mt-0.5 flex-shrink-0" />
+                    <span>Особые возможности и команды</span>
+                  </li>
+                </ul>
+              </div>
+
+              <Button size="lg" className="w-full mt-6">
+                Купить {selectedToken.amount} токенов
+              </Button>
+            </div>
+          </Card>
+        </div>
+      );
+    }
+
     if (currentPage !== 'home') {
       return (
         <div className="flex items-center justify-center h-full">
@@ -176,6 +257,12 @@ const Index = () => {
             onClick={() => setCurrentPage('home')}
           >
             Главная
+          </Button>
+          <Button
+            variant={currentPage === 'tokens' ? 'default' : 'ghost'}
+            onClick={() => setCurrentPage('tokens')}
+          >
+            Токены
           </Button>
           <Button
             variant={currentPage === 'sales' ? 'default' : 'ghost'}
